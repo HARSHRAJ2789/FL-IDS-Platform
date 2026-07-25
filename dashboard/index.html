@@ -411,7 +411,8 @@
                 const data = await res.json();
                 localStorage.setItem('fl_token', data.access_token || data.token);
                 localStorage.setItem('fl_api_base', API_BASE);
-                window.location.href = API_BASE + '/dashboard';
+                // Stay on Netlify — portal.html is served here
+                window.location.href = '/portal.html';
             } catch (err) {
                 showError(err.message || 'Connection failed');
                 setLoading('login-form', false);
@@ -452,8 +453,7 @@
 
         // Check if already logged in
         if (localStorage.getItem('fl_token')) {
-            const base = localStorage.getItem('fl_api_base') || API_BASE;
-            window.location.href = base + '/dashboard';
+            window.location.href = '/portal.html';
         }
     </script>
 </body>
