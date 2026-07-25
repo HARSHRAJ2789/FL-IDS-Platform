@@ -11,11 +11,11 @@ from routes import auth, rounds, alerts, metrics
 
 app = FastAPI(title="FL-IDS Platform", version="1.0")
 
-# CORS
+# CORS — allow all origins (Netlify dashboard → Render backend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
