@@ -26,23 +26,15 @@ app.include_router(rounds.router)
 app.include_router(alerts.router)
 app.include_router(metrics.router)
 
-# Mount static files if directory exists, else create it
-STATIC_DIR = os.path.join(os.path.dirname(__file__), "dashboard")
-os.makedirs(STATIC_DIR, exist_ok=True)
+# Dashboard lives one level up from server/ in the dashboard/ folder
+DASHBOARD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dashboard"))
+os.makedirs(DASHBOARD_DIR, exist_ok=True)
 
-# Create dummy HTML files to serve
-portal_html_path = os.path.join(STATIC_DIR, "portal.html")
-index_html_path = os.path.join(STATIC_DIR, "index.html")
+portal_html_path = os.path.join(DASHBOARD_DIR, "portal.html")
+index_html_path  = os.path.join(DASHBOARD_DIR, "index.html")
 
-if not os.path.exists(portal_html_path):
-    with open(portal_html_path, "w") as f:
-        f.write("<html><body><h1>FL-IDS Dashboard Portal</h1></body></html>")
-
-if not os.path.exists(index_html_path):
-    with open(index_html_path, "w") as f:
-        f.write("<html><body><h1>FL-IDS Login</h1></body></html>")
-
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Serve dashboard assets as static files
+app.mount("/static", StaticFiles(directory=DASHBOARD_DIR), name="static")
 
 @app.on_event("startup")
 def startup_event():
@@ -63,8 +55,16 @@ def read_root():
 def get_dashboard():
     return FileResponse(portal_html_path)
 
+@app.get("/portal.html", response_class=HTMLResponse)
+def get_portal_html():
+    return FileResponse(portal_html_path)
+
 @app.get("/login", response_class=HTMLResponse)
 def get_login():
+    return FileResponse(index_html_path)
+
+@app.get("/index.html", response_class=HTMLResponse)
+def get_index_html():
     return FileResponse(index_html_path)
 
 @app.websocket("/ws/{org_id}")

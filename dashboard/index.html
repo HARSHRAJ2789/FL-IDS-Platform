@@ -406,7 +406,7 @@
                 
                 const data = await res.json();
                 localStorage.setItem('fl_token', data.token);
-                window.location.href = 'portal.html';
+                window.location.href = '/dashboard';
             } catch (err) {
                 showError(err.message || 'Connection failed');
                 setLoading('login-form', false);
