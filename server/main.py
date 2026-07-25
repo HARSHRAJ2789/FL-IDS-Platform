@@ -26,8 +26,10 @@ app.include_router(rounds.router)
 app.include_router(alerts.router)
 app.include_router(metrics.router)
 
-# Dashboard lives one level up from server/ in the dashboard/ folder
-DASHBOARD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dashboard"))
+# Dashboard dir: ./dashboard (Docker/Railway) or ../dashboard (local dev)
+_local   = os.path.join(os.path.dirname(__file__), "dashboard")
+_devpath = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dashboard"))
+DASHBOARD_DIR = _local if os.path.isdir(_local) else _devpath
 os.makedirs(DASHBOARD_DIR, exist_ok=True)
 
 portal_html_path = os.path.join(DASHBOARD_DIR, "portal.html")

@@ -1,10 +1,6 @@
-# ── Railway Deployment Configuration ──────────────────────────────────────
-# Deploy: railway up  (from the server/ directory)
-# Or connect GitHub repo in Railway dashboard
-
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "server/Dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
