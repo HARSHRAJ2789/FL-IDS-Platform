@@ -239,6 +239,7 @@
             background: rgba(0, 229, 255, 0.1);
         }
     </style>
+    <script src="config.js"></script>
 </head>
 <body>
     <canvas id="matrix-canvas"></canvas>
@@ -387,6 +388,9 @@
             });
         }
 
+        // ── API Base URL (set in config.js, falls back to same origin) ──────
+        const API_BASE = (window.FL_IDS_API || '').replace(/\/$/, '');
+
         // Auth Logic
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -396,7 +400,7 @@
             const password = document.getElementById('login-password').value;
             
             try {
-                const res = await fetch('/auth/login', {
+                const res = await fetch(`${API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -405,8 +409,9 @@
                 if (!res.ok) throw new Error('Invalid credentials');
                 
                 const data = await res.json();
-                localStorage.setItem('fl_token', data.token);
-                window.location.href = '/dashboard';
+                localStorage.setItem('fl_token', data.access_token || data.token);
+                localStorage.setItem('fl_api_base', API_BASE);
+                window.location.href = API_BASE + '/dashboard';
             } catch (err) {
                 showError(err.message || 'Connection failed');
                 setLoading('login-form', false);
@@ -422,7 +427,7 @@
             const password = document.getElementById('reg-password').value;
             
             try {
-                const res = await fetch('/auth/register', {
+                const res = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ org_name: org, email, password })
@@ -447,7 +452,8 @@
 
         // Check if already logged in
         if (localStorage.getItem('fl_token')) {
-            window.location.href = 'portal.html';
+            const base = localStorage.getItem('fl_api_base') || API_BASE;
+            window.location.href = base + '/dashboard';
         }
     </script>
 </body>
