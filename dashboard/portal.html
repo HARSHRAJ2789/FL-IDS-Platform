@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FL-IDS | Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #03060f;
+            --surface: #0a0e17;
+            --surface-hover: #131b2c;
+            --cyan: #00e5ff;
+            --green: #39ff14;
+            --purple: #a855f7;
+            --red: #ff4444;
+            --orange: #ff9800;
+            --yellow: #ffeb3b;
+            --glass-bg: rgba(16, 22, 38, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-border-active: rgba(0, 229, 255, 0.3);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 250px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+            background-image: linear-gradient(rgba(3, 6, 15, 0.9), rgba(3, 6, 15, 0.9)), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 229, 255, 0.03) 2px, rgba(0, 229, 255, 0.03) 4px);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyan); 
+        }
+
+        /* Top Nav */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--cyan);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+            text-decoration: none;
+        }
+        .logo span { color: var(--purple); }
+
+        .org-name {
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .org-name::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--green);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+        .icon-btn:hover { color: var(--text-main); }
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background: var(--red);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--glass-border);
+            padding: 1.5rem 0;
+            z-index: 90;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+        }
+
+        .nav-link.active {
+            background: rgba(0, 229, 255, 0.05);
+            color: var(--cyan);
+            border-left-color: var(--cyan);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: 64px;
+            padding: 2rem;
+            width: calc(100% - var(--sidebar-width));
+            min-height: calc(100vh - 64px);
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Grid System */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            border-color: var(--glass-border-active);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .stat-value.cyan { color: var(--cyan); text-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+        .stat-value.purple { color: var(--purple); text-shadow: 0 0 15px rgba(168, 85, 247, 0.4); }
+        .stat-value.green { color: var(--green); text-shadow: 0 0 15px rgba(57, 255, 20, 0.4); }
+
+        /* Charts Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--glass-border);
+            white-space: nowrap;
+        }
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-size: 0.875rem;
+        }
+        tbody tr {
+            transition: background 0.2s;
+        }
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-critical { background: rgba(255, 68, 68, 0.1); color: var(--red); border: 1px solid rgba(255, 68, 68, 0.3); }
+        .status-high { background: rgba(255, 152, 0, 0.1); color: var(--orange); border: 1px solid rgba(255, 152, 0, 0.3); }
+        .status-medium { background: rgba(255, 235, 59, 0.1); color: var(--yellow); border: 1px solid rgba(255, 235, 59, 0.3); }
+        .status-low { background: rgba(0, 229, 255, 0.1); color: var(--cyan); border: 1px solid rgba(0, 229, 255, 0.3); }
+        .status-active { background: rgba(57, 255, 20, 0.1); color: var(--green); border: 1px solid rgba(57, 255, 20, 0.3); }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
+            transition: width 0.3s ease;
+        }
+
+        /* Code Block */
+        pre {
+            background: #000;
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: var(--green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            background: var(--cyan);
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); }
+        
+        .api-key-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .api-key-input {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border);
+            color: var(--cyan);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            flex: 1;
+            outline: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; width: 100%; }
+            .grid-cols-4 { grid-template-columns: 1fr 1fr; }
+            .grid-cols-2 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .grid-cols-4 { grid-template-columns: 1fr; }
+        }
+
+        /* Audio element for alerts */
+        #alert-sound { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Audio for new alerts -->
+    <audio id="alert-sound" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" preload="auto"></audio>
+
+    <!-- Top Nav -->
+    <nav class="top-nav">
+        <div class="nav-left">
+            <a href="#" class="logo">FL-IDS<span>.</span></a>
+            <div class="org-name" id="display-org-name">Loading...</div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn" title="Notifications">
+                🔔 <span class="badge" id="alert-badge">0</span>
+            </button>
+            <button class="icon-btn" title="Settings">⚙️</button>
+            <button class="btn-outline" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link active" data-target="overview">Overview</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-target="fl-training">FL Training</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-target="threat-alerts">Threat Alerts</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-target="my-clients">My Clients</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-target="api-keys">API Keys</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Overview Section -->
+        <section id="overview" class="page-section active">
+            <div class="section-header">
+                <h2 class="section-title">Network Overview</h2>
+            </div>
+            
+            <div class="grid grid-cols-4" style="margin-bottom: 1.5rem;">
+                <div class="card stat-card">
+                    <span class="stat-label">Global Accuracy</span>
+                    <span class="stat-value cyan" id="stat-acc">0.00%</span>
+                </div>
+                <div class="card stat-card">
+                    <span class="stat-label">F1 Score</span>
+                    <span class="stat-value purple" id="stat-f1">0.0000</span>
+                </div>
+                <div class="card stat-card">
+                    <span class="stat-label">Active Clients</span>
+                    <span class="stat-value green" id="stat-clients">0</span>
+                </div>
+                <div class="card stat-card">
+                    <span class="stat-label">Total Threats (24h)</span>
+                    <span class="stat-value" id="stat-threats">0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2" style="margin-bottom: 1.5rem;">
+                <div class="card">
+                    <h3 class="stat-label">Metrics (Accuracy & F1)</h3>
+                    <div class="chart-container">
+                        <canvas id="accChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="stat-label">Global Loss</h3>
+                    <div class="chart-container">
+                        <canvas id="lossChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3">
+                <div class="card" style="grid-column: span 2;">
+                    <h3 class="stat-label" style="margin-bottom: 1rem;">Recent Threats</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Client</th>
+                                    <th>Attack Type</th>
+                                    <th>Severity</th>
+                                    <th>Source IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-threats-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="stat-label">Federated Learning Status</h3>
+                    <div style="margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span class="text-muted" style="font-size: 0.875rem;">Current Round</span>
+                            <span class="font-mono text-main" id="fl-current-round">Round 0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span class="text-muted" style="font-size: 0.875rem;">Status</span>
+                            <span class="status-badge status-active" id="fl-status">ACTIVE</span>
+                        </div>
+                        <div style="margin-top: 1.5rem;">
+                            <span class="text-muted" style="font-size: 0.875rem; display: block; margin-bottom: 0.5rem;">Aggregation Progress (<span id="fl-prog-text">0/0</span> Clients)</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="fl-progress" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FL Training Section -->
+        <section id="fl-training" class="page-section">
+            <div class="section-header">
+                <h2 class="section-title">Federated Learning Details</h2>
+            </div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h3 class="stat-label">Round History</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Round #</th>
+                                <th>Started</th>
+                                <th>Completed</th>
+                                <th>Clients</th>
+                                <th>Accuracy</th>
+                                <th>F1 Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fl-history-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Threat Alerts Section -->
+        <section id="threat-alerts" class="page-section">
+            <div class="section-header">
+                <h2 class="section-title">Threat Alerts</h2>
+            </div>
+            <div class="card">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <input type="text" placeholder="Filter by client..." style="background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 0.5rem; color: #fff; border-radius: 4px;">
+                    <select style="background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 0.5rem; color: #fff; border-radius: 4px;">
+                        <option value="">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Client</th>
+                                <th>Attack Type</th>
+                                <th>Severity</th>
+                                <th>Source IP</th>
+                                <th>Confidence</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-threats-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Clients Section -->
+        <section id="my-clients" class="page-section">
+            <div class="section-header">
+                <h2 class="section-title">Registered Agents</h2>
+            </div>
+            <div class="card">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hostname</th>
+                                <th>IP Address</th>
+                                <th>Last Seen</th>
+                                <th>Status</th>
+                                <th>Rounds Participated</th>
+                                <th>Alerts Generated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clients-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- API Keys Section -->
+        <section id="api-keys" class="page-section">
+            <div class="section-header">
+                <h2 class="section-title">API Integration</h2>
+            </div>
+            <div class="grid grid-cols-2">
+                <div class="card">
+                    <h3 class="stat-label" style="margin-bottom: 1rem;">Authentication Key</h3>
+                    <div class="api-key-box">
+                        <input type="text" class="api-key-input" id="api-key-display" value="xxxx-xxxx-xxxx-xxxx" readonly>
+                        <button class="btn" onclick="copyIntegrationKey()">Copy</button>
+                    </div>
+                    <button class="btn-outline" onclick="rotateKey()">Rotate Key</button>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">Rotating the key will immediately revoke access for all currently deployed agents using the old key.</p>
+                </div>
+                <div class="card">
+                    <h3 class="stat-label" style="margin-bottom: 1rem;">Deployment Instructions</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Run this command on your edge nodes to deploy the FL-IDS agent:</p>
+                    <pre id="deploy-cmd">FLDS_API_KEY=your-key \
+FLDS_SERVER_URL=https://server.railway.app \
+curl -sSL https://server.railway.app/install.sh | bash</pre>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Auth Check
+        const token = localStorage.getItem('fl_token');
+        if (!token) window.location.href = 'index.html';
+
+        // Add token to all fetch calls implicitly using a wrapper or manually
+        const authHeaders = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+
+        function logout() {
+            localStorage.removeItem('fl_token');
+            window.location.href = 'index.html';
+        }
+
+        // Navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.page-section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('data-target');
+                
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                sections.forEach(s => {
+                    s.classList.remove('active');
+                    if (s.id === target) s.classList.add('active');
+                });
+            });
+        });
+
+        // Charts Setup
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        
+        const accCtx = document.getElementById('accChart').getContext('2d');
+        const accChart = new Chart(accCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Accuracy',
+                        borderColor: '#00e5ff',
+                        backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                        data: [],
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'F1 Score',
+                        borderColor: '#a855f7',
+                        backgroundColor: 'transparent',
+                        data: [],
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        const lossCtx = document.getElementById('lossChart').getContext('2d');
+        const lossChart = new Chart(lossCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Global Loss',
+                    borderColor: '#ff4444',
+                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                    data: [],
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Mock Data Loading (Replace with real API calls)
+        async function fetchDashboardData() {
+            try {
+                // In a real app, you would fetch from /auth/me, /metrics/global, /alerts, etc.
+                // using: await fetch('/api/endpoint', { headers: authHeaders })
+                
+                // Mock Auth/Me
+                document.getElementById('display-org-name').textContent = "CyberCorp Inc.";
+                
+                // Mock Stats
+                document.getElementById('stat-acc').textContent = "98.4%";
+                document.getElementById('stat-f1').textContent = "0.975";
+                document.getElementById('stat-clients').textContent = "42";
+                document.getElementById('stat-threats').textContent = "156";
+                document.getElementById('fl-current-round').textContent = "Round 24";
+                document.getElementById('fl-prog-text').textContent = "38/42";
+                document.getElementById('fl-progress').style.width = "90%";
+
+                // Update Charts
+                const rounds = Array.from({length: 10}, (_, i) => `R${i+15}`);
+                accChart.data.labels = rounds;
+                accChart.data.datasets[0].data = rounds.map(() => 0.9 + Math.random()*0.09);
+                accChart.data.datasets[1].data = rounds.map(() => 0.85 + Math.random()*0.1);
+                accChart.update();
+
+                lossChart.data.labels = rounds;
+                lossChart.data.datasets[0].data = rounds.map(() => 0.5 - Math.random()*0.3);
+                lossChart.update();
+
+                // Mock Threats
+                const threats = [
+                    { time: '10:42 AM', client: 'edge-node-01', attack: 'DDoS', severity: 'critical', ip: '192.168.1.105', conf: '99%' },
+                    { time: '10:15 AM', client: 'gateway-us-east', attack: 'Port Scan', severity: 'low', ip: '10.0.0.42', conf: '85%' },
+                    { time: '09:30 AM', client: 'db-server-02', attack: 'SQLi', severity: 'high', ip: '172.16.0.4', conf: '94%' },
+                ];
+
+                const tbody = document.getElementById('recent-threats-body');
+                const allTbody = document.getElementById('all-threats-body');
+                
+                let html = '';
+                let allHtml = '';
+                
+                threats.forEach(t => {
+                    const sevClass = `status-${t.severity}`;
+                    const row = `
+                        <tr>
+                            <td>${t.time}</td>
+                            <td class="font-mono">${t.client}</td>
+                            <td>${t.attack}</td>
+                            <td><span class="status-badge ${sevClass}">${t.severity}</span></td>
+                            <td class="font-mono">${t.ip}</td>
+                        </tr>
+                    `;
+                    html += row;
+                    allHtml += row.replace('</tr>', `<td>${t.conf}</td><td><button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Ack</button></td></tr>`);
+                });
+                
+                tbody.innerHTML = html;
+                allTbody.innerHTML = allHtml;
+
+                // Mock API Key
+                document.getElementById('api-key-display').value = "flds_live_xxxx-xxxx-xxxx";
+
+            } catch (error) {
+                console.error("Failed to load dashboard data", error);
+                if (error.status === 401) logout();
+            }
+        }
+
+        // WebSocket for Real-time
+        function initWebSocket() {
+            // Mock org_id
+            const orgId = "org_123";
+            // const ws = new WebSocket(`ws://${window.location.host}/ws/${orgId}`);
+            
+            // Mock WS events for demonstration
+            let alertCount = 0;
+            setInterval(() => {
+                // Simulate new alert
+                alertCount++;
+                const badge = document.getElementById('alert-badge');
+                badge.textContent = alertCount;
+                badge.style.transform = 'scale(1.2)';
+                setTimeout(() => badge.style.transform = 'scale(1)', 200);
+                
+                // Play sound
+                try {
+                    document.getElementById('alert-sound').play().catch(()=>{});
+                } catch(e) {}
+            }, 15000);
+        }
+
+        // API Key features
+        function copyIntegrationKey() {
+            const val = document.getElementById('api-key-display').value;
+            navigator.clipboard.writeText(val);
+        }
+
+        function rotateKey() {
+            if(confirm('Are you sure? Existing agents will lose access.')) {
+                // POST /auth/rotate-key
+                document.getElementById('api-key-display').value = "flds_live_" + Math.random().toString(36).substr(2, 10);
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDashboardData();
+            initWebSocket();
+        });
+    </script>
+</body>
+</html>

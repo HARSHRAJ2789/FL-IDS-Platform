@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+venv/
+.env
+*.db
+/data/
+/server/data/
+*.npy
+*.keras
+*.h5
+.DS_Store
+node_modules/

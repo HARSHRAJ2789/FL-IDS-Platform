@@ -1,0 +1,24 @@
+services:
+  # ── Central FL-IDS API Server ───────────────────────────────────────────
+  - type: web
+    name: fl-ids-server
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:////data/flds.db
+      - key: WEIGHTS_DIR
+        value: /data/weights
+      - key: MIN_CLIENTS_FOR_AGGREGATION
+        value: "2"
+      - key: PORT
+        value: "8000"
+    disk:
+      name: flds-data
+      mountPath: /data
+      sizeGB: 10
+    healthCheckPath: /
+    autoDeploy: true
