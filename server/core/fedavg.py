@@ -6,9 +6,11 @@ from typing import List, Tuple
 from sqlalchemy.orm import Session
 from models import FLRound, GlobalMetric
 from datetime import datetime
+from pathlib import Path
 
-WEIGHTS_DIR = "/data/weights"
-os.makedirs(WEIGHTS_DIR, exist_ok=True)
+WEIGHTS_DIR = os.getenv("WEIGHTS_DIR", "./data/weights")
+Path(WEIGHTS_DIR).mkdir(parents=True, exist_ok=True)
+
 
 def load_weights_from_path(path: str) -> List[np.ndarray]:
     """Load weights from a .npy file or JSON."""
